@@ -206,21 +206,6 @@
       color: #666;
       margin: 0.8rem 0;
     }
-    /* GIF container styles */
-    #gifContainer {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 2000;
-    }
-    #gifContainer img {
-      position: absolute;
-      width: 100px;
-      height: auto;
-    }
   </style>
 </head>
 <body>
@@ -295,7 +280,7 @@
     <p>This certifies that</p>
     <p><strong>You</strong> and <strong>Me</strong></p>
     <p>are officially Valentines for life!</p>
-    <p style="margin-top: 1rem;">❤️ Yayyyyyy Happy Happy Happy ❤️</p>
+    <p style="margin-top: 1rem;">❤️ Yaayyy Happy Happy Happy! ❤️</p>
     <button class="back-btn" id="backFromCertificate">Back to Card</button>
   </div>
 
@@ -303,6 +288,8 @@
   <audio id="sadAudio" src="https://us-tuna-sounds-files.voicemod.net/176ff871-8f95-455a-a76f-80292699bad6-1719484551719.mp3" preload="auto"></audio>
   <!-- Audio to play in loop when Yes is clicked -->
   <audio id="yesAudio" src="https://us-tuna-sounds-files.voicemod.net/f5981035-a83a-4a9b-9241-0b5a7299397e-1704129465850.mp3" preload="auto" loop></audio>
+  <!-- Audio to play when Maybe is clicked (local file) -->
+  <audio id="maybeAudio" src="maybe.mp3" preload="auto"></audio>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -320,6 +307,7 @@
       const backFromCertificate = document.getElementById('backFromCertificate');
       const sadAudio = document.getElementById('sadAudio');
       const yesAudio = document.getElementById('yesAudio');
+      const maybeAudio = document.getElementById('maybeAudio');
 
       console.log('DOM loaded', { envelope, card, yesBtn, noBtn, maybeBtn });
 
@@ -342,17 +330,15 @@
         e.stopPropagation();
       });
 
-      // "No" button: play sad audio, show GIFs, show alert, then stop audio and remove GIFs
+      // "No" button: play sad audio, show alert, then stop audio
       noBtn.addEventListener('click', function(e) {
         e.stopPropagation();
         console.log('"No" button clicked.');
         sadAudio.currentTime = 0;
         sadAudio.play().catch(err => console.error("Audio playback failed:", err));
-        showGifs();
         alert('meow meow meow meow💔 Please try again!');
         sadAudio.pause();
         sadAudio.currentTime = 0;
-        removeGifs();
         container.classList.remove('open');
         envelope.style.display = 'block';
         shadow.style.display = 'block';
@@ -360,13 +346,15 @@
         container.addEventListener('click', envelopeClickHandler);
       });
 
-      // "Maybe" button: hide card, show perks section, and play YouTube audio in background
+      // "Maybe" button: hide card, show perks section, and play maybe audio in background
       maybeBtn.addEventListener('click', function(e) {
         e.stopPropagation();
         console.log('"Maybe" button clicked.');
         card.style.display = 'none';
         perks.classList.add('visible');
-        playYTAudio();
+        maybeAudio.currentTime = 0;
+        maybeAudio.loop = true;
+        maybeAudio.play().catch(err => console.error("Maybe audio playback failed:", err));
       });
 
       // "Yes" button: hide card, show certificate, start confetti, and play yes audio in loop
@@ -390,12 +378,13 @@
         yesAudio.currentTime = 0;
       });
 
-      // Back button in Perks section returns to card and stops YouTube audio
+      // Back button in Perks section returns to card and stops maybeAudio
       backFromPerks.addEventListener('click', function() {
         console.log('Back from Perks clicked.');
         perks.classList.remove('visible');
         card.style.display = 'flex';
-        stopYTAudio();
+        maybeAudio.pause();
+        maybeAudio.currentTime = 0;
       });
 
       // Simple confetti effect
@@ -424,25 +413,6 @@
         }
       `;
       document.head.appendChild(styleElem);
-
-      // Functions to play and stop YouTube audio using an iframe embed
-      function playYTAudio() {
-        if (document.getElementById('ytPlayer')) return;
-        const ytIframe = document.createElement('iframe');
-        ytIframe.id = 'ytPlayer';
-        // Replace "https://username.github.io" with your actual GitHub Pages URL
-        ytIframe.src = "https://www.youtube.com/embed/arIwgqBemOs?autoplay=1&controls=0&showinfo=0&rel=0&loop=1&playlist=arIwgqBemOs&origin=https://https://code0adarsh.github.io/valentine/";
-        ytIframe.style.display = "none";
-        document.body.appendChild(ytIframe);
-        console.log("YouTube audio started");
-      }
-      function stopYTAudio() {
-        const ytIframe = document.getElementById('ytPlayer');
-        if (ytIframe) {
-          ytIframe.remove();
-          console.log("YouTube audio stopped");
-        }
-      }
     });
   </script>
 </body>
