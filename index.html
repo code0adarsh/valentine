@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Valentine's Proposal</title>
+  <link href="https://fonts.googleapis.com/css?family=Solitreo" rel="stylesheet">
+  <!-- Using Font Awesome icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    /* Global Reset */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      height: 100vh;
+      width: 100vw;
+      background: #fee2e9;
+      font-family: 'Solitreo', cursive;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    /* Container & Envelope Styles */
+    .container {
+      position: relative;
+      width: 48vmin;
+      cursor: pointer;
+      z-index: 1;
+    }
+    .envelope {
+      background: #f980a1;
+      height: 30vmin;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+    /* Envelope Cover & Lid */
+    .cover {
+      position: absolute;
+      height: 0;
+      width: 0;
+      border-bottom: 15vmin solid #fba7bd;
+      border-left: 24vmin solid transparent;
+      border-right: 24vmin solid transparent;
+      top: 15vmin;
+      z-index: 3;
+    }
+    .cover::after, .cover::before {
+      content: "";
+      position: absolute;
+      border-top: 15vmin solid transparent;
+      border-bottom: 15vmin solid transparent;
+    }
+    .cover::after {
+      border-left: 24.5vmin solid #fcbbcc;
+      top: -15vmin;
+      left: -24vmin;
+    }
+    .cover::before {
+      border-right: 24.5vmin solid #fcbbcc;
+      top: -15vmin;
+      left: -0.5vmin;
+    }
+    .lid {
+      position: absolute;
+      height: 0;
+      width: 0;
+      border-top: 15vmin solid #f980a1;
+      border-left: 24vmin solid transparent;
+      border-right: 24vmin solid transparent;
+      top: 0;
+      transform-origin: top;
+      z-index: 4;
+      transition: transform 0.5s;
+    }
+    /* Shadow beneath envelope */
+    .shadow {
+      position: absolute;
+      top: 32vmin;
+      border-radius: 50%;
+      opacity: 0.7;
+      height: 2vmin;
+      width: 100%;
+      background: #e8c5d0;
+      z-index: 0;
+    }
+    /* Card (question) Styles */
+    .card {
+      position: absolute;
+      background: white;
+      height: 25vmin;
+      width: 90%;
+      left: 5%;
+      top: 2.5vmin;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      border-radius: 5px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      z-index: 2;
+    }
+    .card h1 {
+      font-size: 2.5vmin;
+      margin-bottom: 2vmin;
+      color: #f980a1;
+    }
+    .buttons {
+      margin-top: 2vmin;
+      display: flex;
+      gap: 1vmin;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .buttons button {
+      font-size: 1.8vmin;
+      padding: 1vmin 2vmin;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background: #f980a1;
+      color: white;
+      transition: transform 0.2s;
+    }
+    .buttons button:hover {
+      transform: scale(1.1);
+    }
+    /* Container open animation */
+    .container.open .lid {
+      animation: open 0.5s forwards;
+    }
+    .container.open .card {
+      animation: slide 0.2s 0.5s forwards;
+    }
+    @keyframes open {
+      to { transform: rotateX(180deg); }
+    }
+    @keyframes slide {
+      to { transform: translateY(-15vmin); }
+    }
+    /* Interactive Sections (Perks & Certificate) */
+    .perks-section, .certificate {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+      z-index: 1000;
+      width: 80%;
+      max-width: 400px;
+    }
+    .visible { display: block; animation: fadeIn 0.5s ease; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translate(-50%, -40%); }
+      to { opacity: 1; transform: translate(-50%, -50%); }
+    }
+    /* Perks Section Styles */
+    .perks-section h2 {
+      color: #f980a1;
+      margin-bottom: 1.5rem;
+    }
+    .perks-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .perk-item {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      font-size: 1rem;
+      color: #666;
+    }
+    .back-btn {
+      background: #f980a1;
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: transform 0.3s ease;
+    }
+    .back-btn:hover {
+      transform: scale(1.05);
+    }
+    /* Certificate Styles */
+    .certificate {
+      background: #fff0f3;
+      border: 3px solid #ff69b4;
+    }
+    .certificate h2 {
+      color: #ff69b4;
+      margin-bottom: 1.5rem;
+    }
+    .certificate p {
+      font-size: 1.4rem;
+      color: #666;
+      margin: 0.8rem 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Envelope & Card Container -->
+  <div class="container" id="envelope-container">
+    <div class="envelope" id="envelope">
+      <div class="cover"></div>
+      <div class="lid"></div>
+    </div>
+    <div class="card" id="card">
+      <h1>Will you be my Valentine?</h1>
+      <div class="buttons">
+        <button id="yesBtn">Yes! 💖</button>
+        <button id="maybeBtn">Maybe? 🤔</button>
+        <button id="noBtn">No 😢</button>
+      </div>
+    </div>
+    <div class="shadow" id="shadow"></div>
+  </div>
+
+  <!-- Perks Section (Using Font Awesome icons) -->
+  <div class="perks-section" id="perks">
+    <h2>Perks of Being My Valentine 🌟</h2>
+    <div class="perks-grid">
+      <div class="perk-item">
+        <i class="fas fa-utensils fa-lg"></i>
+        <span>Personal Chef</span>
+      </div>
+      <div class="perk-item">
+        <i class="fas fa-kiss-beam fa-lg"></i>
+        <span>Kissing</span>
+      </div>
+      <div class="perk-item">
+        <i class="fas fa-hands-helping fa-lg"></i>
+        <span>Cuddling</span>
+      </div>
+      <div class="perk-item">
+        <i class="fas fa-car fa-lg"></i>
+        <span>24/7 Driver</span>
+      </div>
+      <div class="perk-item">
+        <i class="fas fa-spa fa-lg"></i>
+        <span>Massages</span>
+      </div>
+      <div class="perk-item">
+        <i class="fas fa-film fa-lg"></i>
+        <span>Movie Marathons</span>
+      </div>
+      <div class="perk-item">
+        <i class="fas fa-music fa-lg"></i>
+        <span>Concert Nights</span>
+      </div>
+      <div class="perk-item">
+        <i class="fas fa-bed fa-lg"></i>
+        <span>Good Sex</span>
+      </div>
+      <div class="perk-item">
+        <i class="fas fa-user-md fa-lg"></i>
+        <span>Therapist</span>
+      </div>
+      <div class="perk-item">
+        <i class="fas fa-heart fa-lg"></i>
+        <span>Whatever u say</span>
+      </div>
+    </div>
+    <button class="back-btn" id="backFromPerks">Back to Card</button>
+  </div>
+
+  <!-- Certificate Section -->
+  <div class="certificate" id="certificate">
+    <h2>Certificate of Valentine 📜</h2>
+    <p>This certifies that</p>
+    <p><strong>A</strong> and <strong>A</strong></p>
+    <p>are officially Valentines for life!</p>
+    <p style="margin-top: 1rem;">❤️We are both Valentines now!❤️</p>
+  </div>
+
+  <!-- Hidden audio element for "No" button -->
+  <audio id="sadAudio" src="https://us-tuna-sounds-files.voicemod.net/176ff871-8f95-455a-a76f-80292699bad6-1719484551719.mp3" preload="auto"></audio>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get references to key elements
+      const container = document.getElementById('envelope-container');
+      const envelope = document.getElementById('envelope');
+      const shadow = document.getElementById('shadow');
+      const card = document.getElementById('card');
+      const yesBtn = document.getElementById('yesBtn');
+      const noBtn = document.getElementById('noBtn');
+      const maybeBtn = document.getElementById('maybeBtn');
+      const perks = document.getElementById('perks');
+      const certificate = document.getElementById('certificate');
+      const backFromPerks = document.getElementById('backFromPerks');
+      const backFromCertificate = document.getElementById('backFromCertificate');
+      const sadAudio = document.getElementById('sadAudio');
+
+      console.log('DOM loaded', { envelope, card, yesBtn, noBtn, maybeBtn });
+
+      // Envelope click handler: open envelope and remove envelope visuals after animation
+      function envelopeClickHandler() {
+        if (!container.classList.contains('open')) {
+          console.log('Envelope clicked – opening envelope.');
+          container.classList.add('open');
+          // After animation (0.5s), remove envelope and shadow from view
+          setTimeout(() => {
+            envelope.style.display = 'none';
+            shadow.style.display = 'none';
+          }, 500);
+          container.removeEventListener('click', envelopeClickHandler);
+        }
+      }
+      container.addEventListener('click', envelopeClickHandler);
+
+      // Prevent clicks on the card from triggering the container click
+      card.addEventListener('click', function(e) {
+        e.stopPropagation();
+      });
+
+      // "No" button: play audio, show alert, then stop audio once alert is dismissed
+      noBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        console.log('"No" button clicked.');
+        // Reset and play audio
+        sadAudio.currentTime = 0;
+        sadAudio.play().catch(err => console.error("Audio playback failed:", err));
+        // Show alert (blocking)
+        alert('meow meow meow meow💔 Please try again!');
+        // Once alert is dismissed, stop the audio
+        sadAudio.pause();
+        sadAudio.currentTime = 0;
+        // Reset: Show envelope and shadow, display card, and reattach envelope click handler
+        container.classList.remove('open');
+        envelope.style.display = 'block';
+        shadow.style.display = 'block';
+        card.style.display = 'flex';
+        container.addEventListener('click', envelopeClickHandler);
+      });
+
+      // "Maybe" button: hide card, show perks section
+      maybeBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        console.log('"Maybe" button clicked.');
+        card.style.display = 'none';
+        perks.classList.add('visible');
+      });
+
+      // "Yes" button: hide card, show certificate and start confetti
+      yesBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        console.log('"Yes" button clicked.');
+        card.style.display = 'none';
+        certificate.classList.add('visible');
+        startConfetti();
+      });
+
+      // Back button in Perks section returns to card
+      backFromPerks.addEventListener('click', function() {
+        console.log('Back from Perks clicked.');
+        perks.classList.remove('visible');
+        card.style.display = 'flex';
+      });
+      
+      // Back button in Certificate section returns to card
+      backFromCertificate.addEventListener('click', function() {
+        console.log('Back from Certificate clicked.');
+        certificate.classList.remove('visible');
+        card.style.display = 'flex';
+      });
+
+      // Simple confetti effect
+      function startConfetti() {
+        const confettiCount = 50;
+        for (let i = 0; i < confettiCount; i++) {
+          const confetti = document.createElement('div');
+          confetti.innerHTML = ['🎉','💖','🎊','💝'][Math.floor(Math.random() * 4)];
+          confetti.style.position = 'fixed';
+          confetti.style.fontSize = '20px';
+          confetti.style.left = Math.random() * 100 + 'vw';
+          confetti.style.top = '-10vh';
+          confetti.style.animation = `fall ${Math.random() * 3 + 2}s linear`;
+          document.body.appendChild(confetti);
+          setTimeout(() => confetti.remove(), 3000);
+        }
+      }
+
+      // Insert keyframes for the confetti falling animation
+      const styleElem = document.createElement('style');
+      styleElem.innerHTML = `
+        @keyframes fall {
+          0% { transform: translateY(0); opacity: 1; }
+          100% { transform: translateY(110vh); opacity: 0; }
+        }
+      `;
+      document.head.appendChild(styleElem);
+    });
+  </script>
+</body>
+</html>
