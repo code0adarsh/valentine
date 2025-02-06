@@ -206,6 +206,21 @@
       color: #666;
       margin: 0.8rem 0;
     }
+    /* GIF container styles */
+    #gifContainer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2000;
+    }
+    #gifContainer img {
+      position: absolute;
+      width: 100px;
+      height: auto;
+    }
   </style>
 </head>
 <body>
@@ -280,11 +295,14 @@
     <p>This certifies that</p>
     <p><strong>You</strong> and <strong>Me</strong></p>
     <p>are officially Valentines for life!</p>
-    <p style="margin-top: 1rem;">❤️We are both Valentines now!❤️</p>
+    <p style="margin-top: 1rem;">❤️ Yayyyyyy Happy Happy Happy ❤️</p>
+    <button class="back-btn" id="backFromCertificate">Back to Card</button>
   </div>
 
-  <!-- Hidden audio element for "No" button -->
+  <!-- Hidden audio elements -->
   <audio id="sadAudio" src="https://us-tuna-sounds-files.voicemod.net/176ff871-8f95-455a-a76f-80292699bad6-1719484551719.mp3" preload="auto"></audio>
+  <!-- Audio to play in loop when Yes is clicked -->
+  <audio id="yesAudio" src="https://us-tuna-sounds-files.voicemod.net/f5981035-a83a-4a9b-9241-0b5a7299397e-1704129465850.mp3" preload="auto" loop></audio>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -301,6 +319,7 @@
       const backFromPerks = document.getElementById('backFromPerks');
       const backFromCertificate = document.getElementById('backFromCertificate');
       const sadAudio = document.getElementById('sadAudio');
+      const yesAudio = document.getElementById('yesAudio');
 
       console.log('DOM loaded', { envelope, card, yesBtn, noBtn, maybeBtn });
 
@@ -309,7 +328,6 @@
         if (!container.classList.contains('open')) {
           console.log('Envelope clicked – opening envelope.');
           container.classList.add('open');
-          // After animation (0.5s), remove envelope and shadow from view
           setTimeout(() => {
             envelope.style.display = 'none';
             shadow.style.display = 'none';
@@ -324,19 +342,17 @@
         e.stopPropagation();
       });
 
-      // "No" button: play audio, show alert, then stop audio once alert is dismissed
+      // "No" button: play sad audio, show GIFs, show alert, then stop audio and remove GIFs
       noBtn.addEventListener('click', function(e) {
         e.stopPropagation();
         console.log('"No" button clicked.');
-        // Reset and play audio
         sadAudio.currentTime = 0;
         sadAudio.play().catch(err => console.error("Audio playback failed:", err));
-        // Show alert (blocking)
+        showGifs();
         alert('meow meow meow meow💔 Please try again!');
-        // Once alert is dismissed, stop the audio
         sadAudio.pause();
         sadAudio.currentTime = 0;
-        // Reset: Show envelope and shadow, display card, and reattach envelope click handler
+        removeGifs();
         container.classList.remove('open');
         envelope.style.display = 'block';
         shadow.style.display = 'block';
@@ -344,35 +360,42 @@
         container.addEventListener('click', envelopeClickHandler);
       });
 
-      // "Maybe" button: hide card, show perks section
+      // "Maybe" button: hide card, show perks section, and play YouTube audio in background
       maybeBtn.addEventListener('click', function(e) {
         e.stopPropagation();
         console.log('"Maybe" button clicked.');
         card.style.display = 'none';
         perks.classList.add('visible');
+        playYTAudio();
       });
 
-      // "Yes" button: hide card, show certificate and start confetti
+      // "Yes" button: hide card, show certificate, start confetti, and play yes audio in loop
       yesBtn.addEventListener('click', function(e) {
         e.stopPropagation();
         console.log('"Yes" button clicked.');
         card.style.display = 'none';
         certificate.classList.add('visible');
         startConfetti();
+        yesAudio.currentTime = 0;
+        yesAudio.loop = true;
+        yesAudio.play().catch(err => console.error("Yes audio playback failed:", err));
       });
 
-      // Back button in Perks section returns to card
-      backFromPerks.addEventListener('click', function() {
-        console.log('Back from Perks clicked.');
-        perks.classList.remove('visible');
-        card.style.display = 'flex';
-      });
-      
-      // Back button in Certificate section returns to card
+      // Back button in Certificate section returns to card and stops yesAudio
       backFromCertificate.addEventListener('click', function() {
         console.log('Back from Certificate clicked.');
         certificate.classList.remove('visible');
         card.style.display = 'flex';
+        yesAudio.pause();
+        yesAudio.currentTime = 0;
+      });
+
+      // Back button in Perks section returns to card and stops YouTube audio
+      backFromPerks.addEventListener('click', function() {
+        console.log('Back from Perks clicked.');
+        perks.classList.remove('visible');
+        card.style.display = 'flex';
+        stopYTAudio();
       });
 
       // Simple confetti effect
@@ -385,6 +408,7 @@
           confetti.style.fontSize = '20px';
           confetti.style.left = Math.random() * 100 + 'vw';
           confetti.style.top = '-10vh';
+          confetti.style.zIndex = '1500';
           confetti.style.animation = `fall ${Math.random() * 3 + 2}s linear`;
           document.body.appendChild(confetti);
           setTimeout(() => confetti.remove(), 3000);
@@ -400,6 +424,25 @@
         }
       `;
       document.head.appendChild(styleElem);
+
+      // Functions to play and stop YouTube audio using an iframe embed
+      function playYTAudio() {
+        if (document.getElementById('ytPlayer')) return;
+        const ytIframe = document.createElement('iframe');
+        ytIframe.id = 'ytPlayer';
+        // Replace "https://username.github.io" with your actual GitHub Pages URL
+        ytIframe.src = "https://www.youtube.com/embed/arIwgqBemOs?autoplay=1&controls=0&showinfo=0&rel=0&loop=1&playlist=arIwgqBemOs&origin=https://https://code0adarsh.github.io/valentine/";
+        ytIframe.style.display = "none";
+        document.body.appendChild(ytIframe);
+        console.log("YouTube audio started");
+      }
+      function stopYTAudio() {
+        const ytIframe = document.getElementById('ytPlayer');
+        if (ytIframe) {
+          ytIframe.remove();
+          console.log("YouTube audio stopped");
+        }
+      }
     });
   </script>
 </body>
